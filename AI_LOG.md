@@ -21,3 +21,9 @@
 - **Pernyataan Integritas**:
   - Seluruh kode yang dihasilkan telah diperiksa, dipahami, dan diuji secara mandiri.
   - Tidak ada kunci privat, token, password, secrets, atau data pribadi yang disertakan di dalam repository (seluruh data bersifat sintetis).
+
+- **Pengerjaan Sesi Cybersecurity**:
+  - Membantu menyusun inventaris aset produk beserta rating CIA dan alasannya di `security/asset-inventory.md`.
+  - Merancang diagram aliran data (DFD), trust boundaries, dan penanda kripto di `security/dfd.md`.
+  - Menulis 10 analisis ancaman STRIDE spesifik di `security/threat-model.md`.
+  - Menyusun risk register, 5 risiko prioritas dengan analisis kondisi produk, dan rencana kontrol di `security/risk-register.md`.
