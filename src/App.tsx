@@ -9,6 +9,7 @@ export default function App() {
   const [reports, setReports] = useState<Report[]>(initialReports);
 
   const handleAddReport = (rep: Report) => setReports([rep, ...reports]);
+
   const handleUpdateStatus = (id: string, st: Report['status']) => {
     setReports(reports.map((r) => (r.id === id ? { ...r, status: st } : r)));
   };
