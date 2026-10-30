@@ -1,17 +1,59 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { initialReports, type Report } from './data/mockData';
 import { ReportForm } from './pages/ReportForm';
 import { TrackReport } from './pages/TrackReport';
 import { AdminDashboard } from './pages/AdminDashboard';
 
+type SessionState = 'checking' | 'guest' | 'authenticated' | 'error';
+
 export default function App() {
   const [tab, setTab] = useState<'home' | 'report' | 'track' | 'admin'>('home');
   const [reports, setReports] = useState<Report[]>(initialReports);
+  const [sessionState, setSessionState] = useState<SessionState>('checking');
 
   const handleAddReport = (rep: Report) => setReports([rep, ...reports]);
 
   const handleUpdateStatus = (id: string, st: Report['status']) => {
     setReports(reports.map((r) => (r.id === id ? { ...r, status: st } : r)));
+  };
+
+  useEffect(() => {
+    let active = true;
+
+    const checkSession = async () => {
+      try {
+        const response = await fetch('/api/session', { credentials: 'same-origin' });
+        if (active) setSessionState(response.ok ? 'authenticated' : 'guest');
+      } catch (error) {
+        console.error('Gagal memeriksa sesi server:', error);
+        if (active) setSessionState('error');
+      }
+    };
+
+    void checkSession();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleSessionClick = async () => {
+    const loggingIn = sessionState !== 'authenticated';
+    const endpoint = loggingIn ? '/api/masuk' : '/api/logout';
+
+    setSessionState('checking');
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+      if (!response.ok) {
+        throw new Error(`Session request failed with status ${response.status}`);
+      }
+      setSessionState(loggingIn ? 'authenticated' : 'guest');
+    } catch (error) {
+      console.error('Gagal memperbarui sesi server:', error);
+      setSessionState('error');
+    }
   };
 
   return (
@@ -26,6 +68,13 @@ export default function App() {
             <button onClick={() => setTab('report')} className={`px-3 py-1.5 text-xs font-bold rounded-lg ${tab === 'report' ? 'bg-amber-500 text-slate-950' : 'hover:bg-slate-800'}`}>Laporkan</button>
             <button onClick={() => setTab('track')} className={`px-3 py-1.5 text-xs font-bold rounded-lg ${tab === 'track' ? 'bg-amber-500 text-slate-950' : 'hover:bg-slate-800'}`}>Lacak</button>
             <button onClick={() => setTab('admin')} className={`px-3 py-1.5 text-xs font-bold rounded-lg ${tab === 'admin' ? 'bg-amber-500 text-slate-950' : 'hover:bg-slate-800'}`}>Admin</button>
+            <button
+              onClick={() => void handleSessionClick()}
+              disabled={sessionState === 'checking'}
+              className="px-3 py-1.5 text-xs font-bold rounded-lg bg-amber-500 text-slate-950 disabled:opacity-60"
+            >
+              {sessionState === 'authenticated' ? 'Keluar' : 'Masuk'}
+            </button>
           </div>
         </nav>
       </header>
@@ -48,6 +97,9 @@ export default function App() {
       </div>
 
       <footer className="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800">
+        <p role="status" className="mb-2">
+          Sesi server: {sessionState === 'checking' ? 'memeriksa...' : sessionState === 'authenticated' ? 'aktif' : sessionState === 'guest' ? 'belum masuk' : 'gagal diperbarui'}
+        </p>
         &copy; 2026 IntegritasKita - Milestone 1 Pemweb & Kripto.
       </footer>
     </div>
