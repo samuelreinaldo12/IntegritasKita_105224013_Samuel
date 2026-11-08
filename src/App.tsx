@@ -83,7 +83,7 @@ export default function App() {
           <main className="max-w-3xl mx-auto px-4 py-16 text-center">
             <h1 className="text-4xl font-extrabold text-slate-900 mb-4">Platform Pengaduan Korupsi Anonim</h1>
             <p className="text-slate-600 mb-8">
-              Terintegrasi dengan sistem keamanan hashing SHA-256 dan enkripsi AES-256-GCM untuk menjamin anonimitas pelapor.
+              Token demo menggunakan SHA-256. Primitive enkripsi AES-256-GCM tersedia untuk pengujian dan belum terhubung ke penyimpanan laporan.
             </p>
             <button onClick={() => setTab('report')} className="bg-amber-500 text-slate-950 font-bold px-6 py-3 rounded-xl hover:bg-amber-400 shadow">
               Mulai Buat Laporan

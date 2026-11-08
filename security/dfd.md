@@ -1,13 +1,13 @@
 # Diagram Aliran Data (DFD) - IntegritasKita
 
-Dokumen ini memuat diagram arsitektur aliran data sistem pengaduan korupsi anonim, lengkap dengan batasan kepercayaan (*Trust Boundaries*) dan penandaan mekanisme kriptografi[cite: 12, 13].
+Dokumen ini memuat rancangan arsitektur aliran data sistem pengaduan korupsi anonim, lengkap dengan batasan kepercayaan (*Trust Boundaries*) dan penandaan mekanisme kriptografi[cite: 12, 13]. Diagram menunjukkan rancangan target, bukan alur yang sudah terintegrasi pada aplikasi saat ini.
 
 ## 1. Trust Boundaries
 - **TB-1 (Public Zone / Untrusted Zone)**: Zona luar tempat pengguna/pelapor mengakses antarmuka web melalui browser publik.
 - **TB-2 (Application & Cryptographic Processing Zone)**: Zona eksekusi frontend lokal (React) dan modul Web Crypto API (Hashing SHA-256 & Enkripsi AES-256-GCM).
 - **TB-3 (Admin & Secure Storage Zone)**: Zona terlindungi tempat verifikator mengakses dasbor admin dan penyimpanan data/backup terenkripsi.
 
-## 2. Diagram Aliran Data (Mermaid.js)
+## 2. Diagram Rancangan Target (Mermaid.js)
 
 ```mermaid
 graph TD
@@ -41,7 +41,7 @@ graph TD
     AD -->|Update Status / Verifikasi| DS
     DS -->|Catat Aktivitas Audit| LG
 
-## Penandaan Mekanisme Kriptografi pada Aliran Data
+## Penandaan Mekanisme Kriptografi pada Rancangan Target
 
 1. **Kripto-1: Hashing SHA-256 (Anonimitas Token)**
    - **Lokasi Aliran**: Dari `Crypto Module` menuju `TrackReport UI` / `Data Store`.
@@ -49,8 +49,12 @@ graph TD
 
 2. **Kripto-2: Enkripsi Simetris AES-256-GCM (Kerahasiaan Isi Laporan)**
    - **Lokasi Aliran**: Dari `Crypto Module` menuju `Data Store`.
-   - **Penjelasan**: Teks laporan dan berkas bukti dienkripsi menggunakan AES-256-GCM dengan 12-byte IV acak (`crypto.getRandomValues`) sebelum disimpan ke penyimpanan data.
+   - **Penjelasan**: Rancangan menempatkan enkripsi sebelum penyimpanan menggunakan AES-256-GCM dengan 12-byte IV acak (`crypto.getRandomValues`), tag 128-bit, dan AAD kontekstual. Saat ini primitive AES tersedia di `src/lib/crypto/cryptoService.ts`, tetapi belum dihubungkan ke alur simpan laporan.
 
 3. **Kripto-3: Dekripsi AES-256-GCM (Verifikasi Admin)**
    - **Lokasi Aliran**: Dari `Data Store` menuju `AdminDashboard UI`.
-   - **Penjelasan**: Verifikator yang terautentikasi melakukan dekripsi *ciphertext* menggunakan kunci rahasia admin untuk membaca isi pengaduan asli[cite: 12].
+   - **Penjelasan**: Pada rancangan target, backend/verifikator yang terautentikasi mendekripsi *ciphertext* dengan kunci dari secret manager untuk membaca isi pengaduan. Backend, autentikasi, dan penyimpanan terenkripsi belum tersedia[cite: 12].
+
+## Status implementasi
+
+Aplikasi saat ini menggunakan data mock dan tidak menyimpan laporan terenkripsi. Diagram ini tidak membuktikan bahwa data nyata sudah dilindungi. Integrasi harus dilakukan di backend sebelum mengaktifkan penyimpanan data riil; kunci tidak boleh ditanam di frontend.

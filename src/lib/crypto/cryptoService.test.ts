@@ -1,28 +1,89 @@
-import { describe, it, expect } from 'vitest';
-import { generateSHA256Hash, encryptDataAES, decryptDataAES } from './cryptoService';
+import { describe, expect, it } from "vitest";
+import {
+  decryptDataAES,
+  encryptDataAES,
+  generateSHA256Hash,
+  importAES256Key,
+} from "./cryptoService";
 
-describe('Skenario Uji Komponen Kriptografi', () => {
-  it('1. [Positif] Hashing SHA-256 menghasilkan hex 64 karakter', async () => {
-    const hash = await generateSHA256Hash('Laporan Korupsi 123');
-    expect(hash).toHaveLength(64);
+const aad = "IntegritasKita:test:v1:synthetic-report-01";
+
+async function createTestKey(): Promise<CryptoKey> {
+  const rawKey = crypto.getRandomValues(new Uint8Array(32));
+  const keyHex = Array.from(rawKey, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return importAES256Key(keyHex);
+}
+
+describe("Pengujian kriptografi IntegritasKita", () => {
+  it("membuat hash SHA-256 64 karakter hex", async () => {
+    await expect(generateSHA256Hash("Laporan sintetis")).resolves.toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it('2. [Positif] Enkripsi & Dekripsi AES-256-GCM mengembalikan teks asli', async () => {
-    const text = 'Uang suap disembunyikan di lokasi X';
-    const key = 'SuperSecretKeyAdmin123!';
-    const { cipherTextHex, ivHex } = await encryptDataAES(text, key);
-    const decrypted = await decryptDataAES(cipherTextHex, ivHex, key);
-    expect(decrypted).toBe(text);
+  it("mengenkripsi lalu mendekripsi dengan AES-256-GCM dan AAD yang sama", async () => {
+    const key = await createTestKey();
+    const plaintext = "Laporan korupsi sintetis untuk pengujian.";
+    const encrypted = await encryptDataAES(plaintext, key, aad);
+
+    await expect(decryptDataAES(encrypted.cipherTextHex, encrypted.ivHex, key, aad))
+      .resolves.toBe(plaintext);
+    expect(encrypted.ivHex).toMatch(/^[0-9a-f]{24}$/);
+    expect(encrypted.cipherTextHex).toHaveLength(new TextEncoder().encode(plaintext).length * 2 + 32);
   });
 
-  it('3. [Positif] Source keacakan IV menghasilkan ciphertext unik meski input sama', async () => {
-    const key = 'SecretKey1234567890!';
-    const res1 = await encryptDataAES('Data Sama', key);
-    const res2 = await encryptDataAES('Data Sama', key);
-    expect(res1.ivHex).not.toBe(res2.ivHex);
+  it("menghasilkan IV dan ciphertext berbeda untuk setiap enkripsi", async () => {
+    const key = await createTestKey();
+    const first = await encryptDataAES("Laporan sintetis", key, aad);
+    const second = await encryptDataAES("Laporan sintetis", key, aad);
+
+    expect(second.ivHex).not.toBe(first.ivHex);
+    expect(second.cipherTextHex).not.toBe(first.cipherTextHex);
   });
 
-  it('4. [Negatif] Uji Batas: Input teks kosong pada Hashing melempar error', async () => {
-    await expect(generateSHA256Hash('')).rejects.toThrow('Input teks tidak boleh kosong.');
+  it("menolak ciphertext yang telah dimodifikasi", async () => {
+    const key = await createTestKey();
+    const encrypted = await encryptDataAES("Laporan sintetis", key, aad);
+    const changedCiphertext = `${encrypted.cipherTextHex[0] === "0" ? "1" : "0"}${encrypted.cipherTextHex.slice(1)}`;
+
+    await expect(decryptDataAES(changedCiphertext, encrypted.ivHex, key, aad)).rejects.toThrow();
+  });
+
+  it("menolak tag autentikasi yang telah dimodifikasi", async () => {
+    const key = await createTestKey();
+    const encrypted = await encryptDataAES("Laporan sintetis", key, aad);
+    const changedTag = `${encrypted.cipherTextHex.slice(0, -1)}${encrypted.cipherTextHex.endsWith("0") ? "1" : "0"}`;
+
+    await expect(decryptDataAES(changedTag, encrypted.ivHex, key, aad)).rejects.toThrow();
+  });
+
+  it("menolak kunci yang salah", async () => {
+    const key = await createTestKey();
+    const wrongKey = await createTestKey();
+    const encrypted = await encryptDataAES("Laporan sintetis", key, aad);
+
+    await expect(decryptDataAES(encrypted.cipherTextHex, encrypted.ivHex, wrongKey, aad))
+      .rejects.toThrow();
+  });
+
+  it("menolak AAD yang berubah", async () => {
+    const key = await createTestKey();
+    const encrypted = await encryptDataAES("Laporan sintetis", key, aad);
+
+    await expect(decryptDataAES(encrypted.cipherTextHex, encrypted.ivHex, key, `${aad}:changed`))
+      .rejects.toThrow();
+  });
+
+  it("menolak kunci dan IV dengan panjang atau format yang salah", async () => {
+    await expect(importAES256Key("abcd")).rejects.toThrow(/tepat 32 byte/);
+
+    const key = await createTestKey();
+    await expect(decryptDataAES("00".repeat(16), "abcd", key, aad))
+      .rejects.toThrow(/IV AES-GCM harus tepat 12 byte/);
+  });
+
+  it("gagal tertutup untuk plaintext kosong dan AAD kosong", async () => {
+    const key = await createTestKey();
+
+    await expect(encryptDataAES("", key, aad)).rejects.toThrow(/Teks mentah tidak boleh kosong/);
+    await expect(encryptDataAES("Laporan sintetis", key, "")).rejects.toThrow(/AAD tidak boleh kosong/);
   });
 });
