@@ -15,7 +15,7 @@ Aplikasi web pengaduan dugaan korupsi secara anonim yang dikembangkan untuk meme
 ## 2. Fitur Awal & Halaman Aplikasi
 1. **Formulir Pengaduan Anonim**: Dilengkapi validasi sisi klien (*client-side validation*) untuk memastikan kelengkapan kategori, lokasi, kronologi minimal 20 karakter, serta unggah berkas bukti.
 2. **Pelacakan Status Laporan (`TrackReport`)**: Memungkinkan pelapor memantau status pengaduan menggunakan kode token unik hash.
-3. **Dasbor Pengawasan Admin (`AdminDashboard`)**: Portal manajemen bagi verifikator untuk meninjau dan memperbarui status laporan (*Menunggu Verifikasi*, *Sedang Investigasi*, *Selesai*, *Ditolak*).
+3. **Dasbor Pengawasan Admin (`AdminDashboard`)**: Antarmuka pengelolaan laporan hanya ditampilkan untuk sesi admin yang dinyatakan oleh server. Backend autentikasi/otorisasi belum tersedia, jadi panel dinonaktifkan dan aplikasi hanya menggunakan data mock; jangan gunakan untuk mengelola laporan nyata.
 4. **Desain Responsif**: Antarmuka dioptimalkan untuk berbagai ukuran layar (Ponsel $\le$ 640 px, Tablet 768 px, dan Desktop $\ge$ 1024 px).
 5. **Aksesibilitas Tinggi**: Menggunakan HTML semantik dan navigasi terstruktur (Skor Lighthouse Accessibility $\ge$ 85).
 6. **Mock Data**: Menggunakan data tiruan terstruktur sebagai fondasi sebelum integrasi database di milestone berikutnya.
