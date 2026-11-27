@@ -2,7 +2,7 @@
 
 - **Nama/NIM**: Samuel Reinaldo Sebastian Sianturi / 105224013
 - **Repositori**: https://github.com/samuelreinaldo12/integritaskita
-- **Pull request**: [Isi tautan PR `praktikum/modul-07` ke `main`, misal: https://github.com/samuelreinaldo12/integritaskita/pull/1]
+- **Pull request**: https://github.com/samuelreinaldo12/IntegritasKita_105224013_Samuel/pull/1
 
 ---
 
