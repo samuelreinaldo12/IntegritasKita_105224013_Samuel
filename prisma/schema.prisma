@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Kategori {
+  id           Int       @id @default(autoincrement())
+  namaKategori String    @unique
+  deskripsi    String?
+  dibuatPada   DateTime  @default(now())
+  laporan      Laporan[]
+}
+
+model Laporan {
+  id          Int      @id @default(autoincrement())
+  judul       String   @unique
+  lokasi      String
+  kronologi   String
+  status      String   @default("MENUNGGU")
+  dibuatPada  DateTime @default(now())
+  
+  // Relasi 1:N ke Kategori dengan Restrict
+  kategoriId  Int
+  kategori    Kategori @relation(fields: [kategoriId], references: [id], onDelete: Restrict)
+}

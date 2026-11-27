@@ -1,0 +1,3 @@
+NOT RUN: Windows development host; Lynis is unavailable and no Linux VM was supplied.
+This is a blocker note, not a Lynis audit result or hardening score.
+Required: run the baseline audit on the target VM before applying OS hardening.

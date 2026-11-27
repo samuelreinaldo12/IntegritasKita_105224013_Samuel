@@ -1,0 +1,51 @@
+services:
+  app:
+    build:
+      context: .
+    image: integritaskita-app:sec-0.2
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - app-internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    user: "70:70"
+    environment:
+      POSTGRES_DB: integritaskita
+      POSTGRES_USER: integritaskita
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - app-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app-internal:
+    internal: true
+
+volumes:
+  postgres-data:

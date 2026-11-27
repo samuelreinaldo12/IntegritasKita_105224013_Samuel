@@ -1,0 +1,3 @@
+NOT RUN: Docker Engine and Trivy are unavailable on this development host.
+This is a blocker note, not a vulnerability scan.
+Required: scan a built post-hardening image; resolve or document remaining findings.

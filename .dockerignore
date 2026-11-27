@@ -1,0 +1,11 @@
+.git
+.env
+.env.*
+!.env.example
+node_modules
+dist
+dist-ssr
+generated
+security/*.txt
+security/sbom.cdx.json
+*.log

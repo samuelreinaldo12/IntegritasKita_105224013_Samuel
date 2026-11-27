@@ -27,3 +27,8 @@
   - Merancang diagram aliran data (DFD), trust boundaries, dan penanda kripto di `security/dfd.md`.
   - Menulis 10 analisis ancaman STRIDE spesifik di `security/threat-model.md`.
   - Menyusun risk register, 5 risiko prioritas dengan analisis kondisi produk, dan rencana kontrol di `security/risk-register.md`.
+
+- **Pengerjaan Enkripsi AEAD v0.2**:
+  - Menggunakan AI untuk memperbaiki helper AES-256-GCM, menambahkan validasi kunci/IV/AAD, uji negatif autentikasi, dan dokumentasi keputusan pada `KEPUTUSAN.md`.
+  - Memperbarui README dan DFD agar membedakan primitive yang sudah diuji dari enkripsi penyimpanan yang belum terintegrasi.
+  - Verifikasi: `npm test` dan `npm run build`; seluruh data tes sintetis, tanpa kunci produksi atau data pribadi.
